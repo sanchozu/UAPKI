@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Component formatVersion="1.0">
+    <Info>
+        <Name>UapkiNative</Name>
+        <DisplayName>UAPKI Native API для 1С</DisplayName>
+        <Description>Native-компонента 1С поверх бібліотеки UAPKI для накладання та перевірки підписів DSTU 4145-2002.</Description>
+        <Version>1.0.0</Version>
+        <Vendor>UAPKI Project</Vendor>
+        <Guid>e272d9f7-8bc0-4bc2-aa1c-81843458cc58</Guid>
+        <AddInName>AddIn.UapkiNative</AddInName>
+        <Type>Native</Type>
+    </Info>
+    <Platforms>
+        <Platform os="Windows" arch="x86_64">
+            <Binary path="windows/x86_64/uapki1c.dll" entryPoint="UapkiNative" addInName="AddIn.UapkiNative" />
+            <Requirements>
+                <Requirement>Microsoft Windows 10 x64 (або сумісна)</Requirement>
+                <Requirement>1C:Enterprise 8.3 (товстий клієнт)</Requirement>
+            </Requirements>
+        </Platform>
+        <Platform os="Windows" arch="x86">
+            <Binary path="windows/x86/uapki1c.dll" entryPoint="UapkiNative" addInName="AddIn.UapkiNative" />
+            <Requirements>
+                <Requirement>Microsoft Windows 7 SP1 x86 (або сумісна)</Requirement>
+                <Requirement>1C:Enterprise 8.3 (товстий клієнт)</Requirement>
+            </Requirements>
+        </Platform>
+    </Platforms>
+    <Exports>
+        <Properties>
+            <Property name="LastError" type="String" access="Read" description="Рядок з текстом останньої помилки." />
+        </Properties>
+        <Methods>
+            <Method name="Initialize" description="Передає JSON параметри у виклик UAPKI INIT.">
+                <Parameters>
+                    <Parameter name="ПараметрыJSON" type="String" direction="In" />
+                </Parameters>
+            </Method>
+            <Method name="SignFile" description="Підписує файл та зберігає відокремлену підпис.">
+                <Parameters>
+                    <Parameter name="ПутьКФайлу" type="String" direction="In" />
+                    <Parameter name="ПутьКПодписи" type="String" direction="In" />
+                    <Parameter name="ПараметрыJSON" type="String" direction="In" />
+                </Parameters>
+            </Method>
+            <Method name="VerifyFileSignature" description="Перевіряє підпис файлу та повертає JSON звіт.">
+                <Parameters>
+                    <Parameter name="ПутьКФайлу" type="String" direction="In" />
+                    <Parameter name="ПутьКПодписи" type="String" direction="In" />
+                    <Parameter name="ПараметрыJSON" type="String" direction="In" />
+                </Parameters>
+            </Method>
+            <Method name="GetCertificateInfo" description="Читає відомості про сертифікат за шляхом або JSON.">
+                <Parameters>
+                    <Parameter name="Источник" type="String" direction="In" />
+                </Parameters>
+            </Method>
+            <Method name="SignData" description="Підписує текст/байтовий масив в пам'яті та повертає Base64.">
+                <Parameters>
+                    <Parameter name="Данные" type="String" direction="In" />
+                    <Parameter name="ПараметрыJSON" type="String" direction="In" />
+                </Parameters>
+            </Method>
+            <Method name="VerifyDataSignature" description="Перевіряє Base64-підпис для даних в пам'яті.">
+                <Parameters>
+                    <Parameter name="Данные" type="String" direction="In" />
+                    <Parameter name="ПодписьBase64" type="String" direction="In" />
+                    <Parameter name="ПараметрыJSON" type="String" direction="In" />
+                </Parameters>
+            </Method>
+        </Methods>
+    </Exports>
+</Component>
