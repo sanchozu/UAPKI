@@ -1,0 +1,2 @@
+This project uses the single-header release of nlohmann/json (https://github.com/nlohmann/json)
+licensed under the MIT License. See the header file for the full license text.
