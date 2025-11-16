@@ -6,6 +6,7 @@ This directory contains the source code of a cross-platform NativeAPI component 
 
 * Works both on Windows and Linux thick clients of 1C (builds shared library `uapki1c.dll`/`libuapki1c.so`).
 * Uses the official UAPKI JSON API (`process()`/`json_free()`) and keeps all crypto logic inside the proven library.
+* Statically links the UAPKI core into the NativeAPI component, so only a single DLL/SO needs to be shipped per platform.
 * Methods exported to 1C:
   * `Initialize(ПараметрыJSON)` – forwards the provided configuration directly to UAPKI `INIT`.
   * `SignFile(ПутьКФайлу, ПутьКПодписи, ПараметрыJSON)` – reads a file, signs it (default CAdES-BES, DSTU 4145-2002), stores detached signature and returns JSON summary with signer/certificate info.
@@ -17,20 +18,98 @@ This directory contains the source code of a cross-platform NativeAPI component 
 
 ## Build instructions
 
-1. Build UAPKI for your target platform using the existing scripts from the `library/` directory (`build-uapki.sh`, Visual Studio solution, etc.). After the build you need the headers (`uapki-export.h`) and the dynamic libraries (`uapki`, `uapkif`, `uapkic`, optional `cm-*`).
-2. Configure and build the component:
+1. Configure and build the component. By default the CMake project adds `../../library/` as a sub-project, builds static versions of `uapkic`, `uapkif` and `uapki`, and links them into a single NativeAPI library:
 
 ```bash
 cd integration/onec-native
-cmake -B build -DUAPKI_ROOT=/absolute/path/to/uapki/install
+cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 
-On Windows pass the generator and architecture explicitly, for example `-G "Visual Studio 17 2022" -A x64`. The resulting binaries will appear in `build/` (DLL on Windows, SO on Linux).
+   The resulting DLL/SO already contains the UAPKI core, so there is only one binary to copy to the target machine.
+2. If you still prefer to link against pre-built UAPKI artifacts, disable the embedded build (`-DUAPKI_ONEC_EMBED=OFF`) and point `UAPKI_ROOT` to the folder with `uapki-export.h` and `libuapki*`.
+3. Copy the built `uapki1c.dll`/`libuapki1c.so` to a folder that is accessible for the 1C platform (place it next to the 1C executable on Windows or into a directory from `LD_LIBRARY_PATH` on Linux).
 
-3. Copy the built `uapki1c.dll`/`libuapki1c.so` together with UAPKI runtime libraries to a folder that is accessible for the 1C platform:
-   * **Windows** – place the DLLs next to the 1C executable or in a folder listed in `%PATH%`.
-   * **Linux** – copy `libuapki1c.so` and the UAPKI shared objects to `/opt/uapki/` (for example) and add the directory to `LD_LIBRARY_PATH` or `/etc/ld.so.conf.d/uapki.conf` followed by `sudo ldconfig`.
+### Platform-specific notes
+
+The project now ships a single `CMakeLists.txt` that is capable of producing binaries for all platforms supported by the 1C Native API. Use the snippets below as a starting point:
+
+#### Microsoft Windows (x86 and x86-64)
+
+```powershell
+cmake -S integration/onec-native -B build-win64 -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
+cmake --build build-win64 --config Release
+
+cmake -S integration/onec-native -B build-win32 -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE=Release
+cmake --build build-win32 --config Release
+```
+
+#### Linux (x86-64, armv7, armv8)
+
+Native x86-64 build:
+
+```bash
+cmake -S integration/onec-native -B build-linux-x86_64 -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux-x86_64 -j
+```
+
+Cross-compiling for ARM typically requires a sysroot/toolchain. Example for armv7 (hf) and armv8:
+
+```bash
+cmake -S integration/onec-native -B build-linux-armv7 \
+  -DCMAKE_SYSTEM_NAME=Linux \
+  -DCMAKE_SYSTEM_PROCESSOR=armv7 \
+  -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+  -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+  -DCMAKE_SYSROOT=/opt/armv7-sysroot
+cmake --build build-linux-armv7 -j
+
+cmake -S integration/onec-native -B build-linux-arm64 \
+  -DCMAKE_SYSTEM_NAME=Linux \
+  -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+  -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+  -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+  -DCMAKE_SYSROOT=/opt/arm64-sysroot
+cmake --build build-linux-arm64 -j
+```
+
+#### Apple macOS (x86-64 and Apple Silicon)
+
+```bash
+cmake -S integration/onec-native -B build-macos-x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
+cmake --build build-macos-x64 -j
+
+cmake -S integration/onec-native -B build-macos-arm64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
+cmake --build build-macos-arm64 -j
+```
+
+#### Apple iOS / iPadOS (arm64)
+
+```bash
+cmake -S integration/onec-native -B build-ios-arm64 \
+  -DCMAKE_SYSTEM_NAME=iOS \
+  -DCMAKE_OSX_SYSROOT=iphoneos \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
+cmake --build build-ios-arm64 -j
+```
+
+#### Google Android (armv8 and x86-64)
+
+```bash
+export ANDROID_NDK_HOME=/path/to/android-ndk
+cmake -S integration/onec-native -B build-android-arm64 \
+  -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+  -DANDROID_ABI=arm64-v8a \
+  -DANDROID_PLATFORM=24
+cmake --build build-android-arm64 -j
+
+cmake -S integration/onec-native -B build-android-x86_64 \
+  -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+  -DANDROID_ABI=x86_64 \
+  -DANDROID_PLATFORM=24
+cmake --build build-android-x86_64 -j
+```
 
 ## Registering the component in 1C
 

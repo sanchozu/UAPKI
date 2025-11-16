@@ -16,15 +16,25 @@ using nlohmann::json;
 namespace onec {
 namespace {
 
-const WCHAR_T kExtensionName[] = u"UapkiNative";
-const WCHAR_T kClassNames[] = u"UapkiNative";
-const WCHAR_T kPropLastError[] = u"LastError";
-const WCHAR_T kMethodInitialize[] = u"Initialize";
-const WCHAR_T kMethodSignFile[] = u"SignFile";
-const WCHAR_T kMethodVerifyFile[] = u"VerifyFileSignature";
-const WCHAR_T kMethodCertInfo[] = u"GetCertificateInfo";
-const WCHAR_T kMethodSignData[] = u"SignData";
-const WCHAR_T kMethodVerifyData[] = u"VerifyDataSignature";
+constexpr char16_t kExtensionNameRaw[] = u"UapkiNative";
+constexpr char16_t kClassNamesRaw[] = u"UapkiNative";
+constexpr char16_t kPropLastErrorRaw[] = u"LastError";
+constexpr char16_t kMethodInitializeRaw[] = u"Initialize";
+constexpr char16_t kMethodSignFileRaw[] = u"SignFile";
+constexpr char16_t kMethodVerifyFileRaw[] = u"VerifyFileSignature";
+constexpr char16_t kMethodCertInfoRaw[] = u"GetCertificateInfo";
+constexpr char16_t kMethodSignDataRaw[] = u"SignData";
+constexpr char16_t kMethodVerifyDataRaw[] = u"VerifyDataSignature";
+
+const WCHAR_T* kExtensionName = reinterpret_cast<const WCHAR_T*>(kExtensionNameRaw);
+const WCHAR_T* kClassNames = reinterpret_cast<const WCHAR_T*>(kClassNamesRaw);
+const WCHAR_T* kPropLastError = reinterpret_cast<const WCHAR_T*>(kPropLastErrorRaw);
+const WCHAR_T* kMethodInitialize = reinterpret_cast<const WCHAR_T*>(kMethodInitializeRaw);
+const WCHAR_T* kMethodSignFile = reinterpret_cast<const WCHAR_T*>(kMethodSignFileRaw);
+const WCHAR_T* kMethodVerifyFile = reinterpret_cast<const WCHAR_T*>(kMethodVerifyFileRaw);
+const WCHAR_T* kMethodCertInfo = reinterpret_cast<const WCHAR_T*>(kMethodCertInfoRaw);
+const WCHAR_T* kMethodSignData = reinterpret_cast<const WCHAR_T*>(kMethodSignDataRaw);
+const WCHAR_T* kMethodVerifyData = reinterpret_cast<const WCHAR_T*>(kMethodVerifyDataRaw);
 
 const WCHAR_T* kMethodNames[] = {
     kMethodInitialize,

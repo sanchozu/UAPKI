@@ -7,10 +7,6 @@
 #include "onec/addin_api.hpp"
 #include "onec/uapki_json_client.hpp"
 
-namespace nlohmann {
-class json;
-}
-
 namespace onec {
 
 class UapkiComponent : public IComponentBase {

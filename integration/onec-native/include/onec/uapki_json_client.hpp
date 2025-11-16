@@ -4,10 +4,7 @@
 #include <vector>
 
 #include "onec/addin_api.hpp"
-
-namespace nlohmann {
-class json;
-}
+#include "third_party/nlohmann_json.hpp"
 
 namespace onec {
 
