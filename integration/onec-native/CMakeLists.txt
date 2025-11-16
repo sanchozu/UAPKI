@@ -5,30 +5,50 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(UAPKI_ONEC_EMBED "Build UAPKI from sources bundled with the repo" ON)
+set(UAPKI_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../library" CACHE PATH "Path to UAPKI sources")
 set(UAPKI_ROOT "" CACHE PATH "Path to prebuilt UAPKI artifacts")
 
-find_path(UAPKI_INCLUDE_DIR uapki-export.h
-    HINTS
-        ${UAPKI_ROOT}/include
-        ${CMAKE_SOURCE_DIR}/../../library/uapki/include
-    NO_DEFAULT_PATH)
-if(NOT UAPKI_INCLUDE_DIR)
-    find_path(UAPKI_INCLUDE_DIR uapki-export.h)
-endif()
+if(UAPKI_ONEC_EMBED)
+    if(NOT EXISTS "${UAPKI_SOURCE_ROOT}/uapki/CMakeLists.txt")
+        message(FATAL_ERROR "Embedded build requested but ${UAPKI_SOURCE_ROOT} does not look like a UAPKI checkout")
+    endif()
+    # Make sure every static archive is built with -fPIC so it can be linked into the NativeAPI shared library.
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(UAPKI_LIBS_TYPE STATIC CACHE STRING "Type of UAPKI libraries" FORCE)
+    set(UAPKI_DISABLE_COPY ON CACHE BOOL "Disable file copying from embedded UAPKI" FORCE)
+    # Export UAPKI public headers so that uapki-export.h is reachable when we link to the target.
+    set(UAPKI_PUBLIC_INTERNAL_INCLUDES ON CACHE BOOL "Expose UAPKI internal headers" FORCE)
 
-find_library(UAPKI_LIBRARY NAMES uapki
-    HINTS
-        ${UAPKI_ROOT}/lib
-        ${CMAKE_SOURCE_DIR}/../../library/build/out
-        ${CMAKE_SOURCE_DIR}/../../library/out
-)
+    add_subdirectory(${UAPKI_SOURCE_ROOT}/uapkic ${CMAKE_BINARY_DIR}/uapkic)
+    add_subdirectory(${UAPKI_SOURCE_ROOT}/uapkif ${CMAKE_BINARY_DIR}/uapkif)
+    add_subdirectory(${UAPKI_SOURCE_ROOT}/uapki ${CMAKE_BINARY_DIR}/uapki)
+    set(UAPKI_LIBRARY uapki)
+    set(UAPKI_INCLUDE_DIR "")
+else()
+    find_path(UAPKI_INCLUDE_DIR uapki-export.h
+        HINTS
+            ${UAPKI_ROOT}/include
+            ${CMAKE_SOURCE_DIR}/../../library/uapki/include
+        NO_DEFAULT_PATH)
+    if(NOT UAPKI_INCLUDE_DIR)
+        find_path(UAPKI_INCLUDE_DIR uapki-export.h)
+    endif()
 
-if(NOT UAPKI_INCLUDE_DIR)
-    message(FATAL_ERROR "Could not locate uapki-export.h. Set UAPKI_ROOT or UAPKI_INCLUDE_DIR.")
-endif()
+    find_library(UAPKI_LIBRARY NAMES uapki
+        HINTS
+            ${UAPKI_ROOT}/lib
+            ${CMAKE_SOURCE_DIR}/../../library/build/out
+            ${CMAKE_SOURCE_DIR}/../../library/out
+    )
 
-if(NOT UAPKI_LIBRARY)
-    message(FATAL_ERROR "Could not locate uapki library. Set UAPKI_ROOT or UAPKI_LIBRARY.")
+    if(NOT UAPKI_INCLUDE_DIR)
+        message(FATAL_ERROR "Could not locate uapki-export.h. Set UAPKI_ROOT or UAPKI_INCLUDE_DIR.")
+    endif()
+
+    if(NOT UAPKI_LIBRARY)
+        message(FATAL_ERROR "Could not locate uapki library. Set UAPKI_ROOT or UAPKI_LIBRARY.")
+    endif()
 endif()
 
 add_library(uapki_onec_native SHARED

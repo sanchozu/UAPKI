@@ -5,7 +5,8 @@
 #include <string>
 
 namespace {
-const WCHAR_T kClassName[] = u"UapkiNative";
+constexpr char16_t kClassNameRaw[] = u"UapkiNative";
+const WCHAR_T* kClassName = reinterpret_cast<const WCHAR_T*>(kClassNameRaw);
 
 inline uint32_t wcharLength(const WCHAR_T* value) {
     if (!value) {
