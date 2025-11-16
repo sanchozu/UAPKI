@@ -162,7 +162,23 @@ unzip uapki-native-component-linux-x86_64.zip -d uapki-native-component
 
 The resulting `uapki-native-component` directory can be copied to a 1C distribution package or deployed to the target hosts. The `MANIFEST.xml` that is embedded into the archive is also stored for reference in [`packaging/MANIFEST.linux-x86_64.xml`](packaging/MANIFEST.linux-x86_64.xml).
 
+## Prebuilt NativeAPI package (Windows x86 & x86-64)
+
+A ready-to-use NativeAPI component for Windows (both 32-bit and 64-bit thick clients) is stored as a Base64 encoded ZIP archive in [`dist/uapki-native-component-windows.zip.base64`](dist/uapki-native-component-windows.zip.base64).
+
+*The archive contains `MANIFEST.xml`, `README.md`, `examples_usage.bsl` and the compiled `windows/x86/uapki1c.dll` and `windows/x86_64/uapki1c.dll` binaries. All intermediate artifacts are removed after the archive is generated, so the repository only keeps the Base64 text.*
+
+### How to unpack
+
+```bash
+cd integration/onec-native/dist
+base64 -d uapki-native-component-windows.zip.base64 > uapki-native-component-windows.zip
+unzip uapki-native-component-windows.zip -d uapki-native-component-windows
+```
+
+The resulting `uapki-native-component-windows` directory is ready to be added to a 1C distribution package. The `MANIFEST.xml` that is embedded into the archive is stored for reference in [`packaging/MANIFEST.windows.xml`](packaging/MANIFEST.windows.xml).
+
 > **Note**
 >
-> Only the Linux x86-64 build is shipped in this repository because cross-compilers for the other platforms listed above are not available in the build environment. Use the platform-specific CMake configuration snippets earlier in this document to build Windows, Linux ARM, macOS, iOS and Android binaries locally and regenerate the archive if required.
+> Linux x86-64 and Windows x86/x86-64 binaries are provided as Base64 archives in this repository. Use the platform-specific CMake configuration snippets earlier in this document to build Linux ARM, macOS, iOS and Android binaries locally and regenerate the archive if required.
 

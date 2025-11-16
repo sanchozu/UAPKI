@@ -35,7 +35,7 @@ inline void variantSetStringUtf16(tVariant& var, IMemoryManager* mem, const std:
     var.strLen = static_cast<uint32_t>(value.size());
 }
 
-inline void variantSetUtf8String(tVariant& var, IMemoryManager* mem, const std::string& utf8);
+void variantSetUtf8String(tVariant& var, IMemoryManager* mem, const std::string& utf8);
 
 std::string variantGetUtf8String(const tVariant& var);
 

@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+    add_compile_definitions(__MINGW_USE_VC2005_COMPAT)
+endif ()
+
 option(UAPKI_ONEC_EMBED "Build UAPKI from sources bundled with the repo" ON)
 set(UAPKI_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../library" CACHE PATH "Path to UAPKI sources")
 set(UAPKI_ROOT "" CACHE PATH "Path to prebuilt UAPKI artifacts")
