@@ -42,6 +42,15 @@ if (${WIN32})
 endif ()
 
 find_package(CURL REQUIRED)
+if (TARGET CURL::libcurl)
+    set(UAPKI_CURL_TARGET CURL::libcurl)
+else ()
+    set(UAPKI_CURL_TARGET ${CURL_LIBRARIES})
+endif ()
+set(UAPKI_CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIRS})
+if (NOT UAPKI_CURL_INCLUDE_DIRS AND DEFINED CURL_INCLUDE_DIR)
+    set(UAPKI_CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIR})
+endif ()
 
 set(PATH_PRJ ${CMAKE_CURRENT_SOURCE_DIR})
 set(PATH_UAPKIC ${PATH_PRJ}/../uapkic)
@@ -79,6 +88,9 @@ target_include_directories(uapki ${UAPKI_INTERNAL_INCLUDES_MODE}
         ${PATH_COMMON_LOADERS}
         ${PATH_PRJ}/include
 )
+if (UAPKI_CURL_INCLUDE_DIRS)
+    target_include_directories(uapki PRIVATE ${UAPKI_CURL_INCLUDE_DIRS})
+endif ()
 
 set_target_properties(uapki PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(uapki PROPERTIES CXX_VISIBILITY_PRESET hidden)
@@ -87,8 +99,12 @@ set_target_properties(uapki PROPERTIES VERSION ${UAPKI_VERSION} SOVERSION ${UAPK
 
 target_compile_definitions(uapki PRIVATE UAPKI_LIBRARY)
 target_link_libraries(uapki ${UAPKI_INTERNAL_INCLUDES_MODE} uapkic uapkif)
+target_link_libraries(uapki PRIVATE ${UAPKI_CURL_TARGET})
 if (${UNIX})
-    target_link_libraries(uapki PRIVATE dl curl)
+    target_link_libraries(uapki PRIVATE dl)
+endif ()
+if (${WIN32})
+    target_link_libraries(uapki PRIVATE ws2_32 bcrypt crypt32 advapi32 iphlpapi)
 endif ()
 if (${APPLE})
     target_link_libraries(uapki PRIVATE iconv)

@@ -31,6 +31,10 @@
 #include "uapkif.h"
 #include "macros-internal.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
 #include <iconv.h>
